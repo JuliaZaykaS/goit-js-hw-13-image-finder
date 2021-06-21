@@ -26,3 +26,8 @@
 .material-icons {
   margin-right: 5px;
 }
+
+.hidden-point {
+  display: none;
+  /* opacity: 1; */
+}

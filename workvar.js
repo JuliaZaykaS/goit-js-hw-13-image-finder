@@ -1,7 +1,7 @@
 import galleryMarkup from './templates/gallery.hbs';
 import css from './css/style.css';
 const debounce = require('lodash.debounce');
-import  ImagesAPIService from './apiService';
+import API from './apiService';
 
 const refs = {
   buttonEl: document.querySelector('#load-more-btn'),
@@ -10,62 +10,68 @@ const refs = {
   // hiddenPointEl: document.getElementById('hidden-point'),
 };
 
-const imagesAPIService = new ImagesAPIService();
-console.log(imagesAPIService);
+// function scroll() {
+//   document.getElementById("hidden-point").scrollIntoView({
+//   behavior: 'smooth',
+//   block: 'end',
+//   })
+
+// //   document.body.insertAdjacentHTML('beforeend', '<div id="hidden-point"></div>')
+// //   const hiddenPointEl= document.getElementById('hidden-point')
+// //  hiddenPointEl.scrollIntoView({
+// //   behavior: 'smooth',
+// //   block: 'end',
+// //   });
+
+// }
+
 
 function renderGallery(array) {
+  // const gallery = galleryMarkup(array);
   refs.listEl.insertAdjacentHTML('beforeend', galleryMarkup(array));
 }
 
 refs.formEl.addEventListener('input', debounce(onInputChange, 1500));
-
+let page = API.page;
 
 function onInputChange(e) {
   e.preventDefault();
-  imagesAPIService.query = e.target.value;
-  console.log(e.target.value);
-  console.log(imagesAPIService.query);
-    if (imagesAPIService.query === '') {
-
+  const searchQuery = e.target.value;
+    if (searchQuery === '') {
+        // page = API.page;
     clearMarkupForNewImages();
     return;
   }
-  console.log(imagesAPIService)
-  imagesAPIService.resetPage();
   clearMarkupForNewImages();
-  fetchAndRender();
-  // imagesAPIService.incrementPage();
-  // scroll();
+  fetchAndRender(searchQuery);
+  scroll();
 
 }
 
-function fetchAndRender() {
-  // const data = imagesAPIService.fetchImages();
-  // console.log(data);
+function fetchAndRender(searchQuery, page, perPage) {
+  const data = API.fetchImages(searchQuery, page, API.perPage);
 
-   console.log(imagesAPIService.fetchImages());
-    // .then(console.log)
-  //   .then(images => {
-  //   console.log(images);
-  //   return renderGallery(images);
-  // });
+  data.then(result => {
+    console.log(result);
+    return renderGallery(result);
+  });
 }
 
 refs.buttonEl.addEventListener('click', onBtnClick);
 
 function onBtnClick(e) {
     if (refs.formEl.elements.query.value === '') {
-        // page = API.page;
+        page = API.page;
     return;
   }
-  // page += 1;
+  page += 1;
   console.log(page);
-  // scroll();
+  scroll();
   fetchAndRender(refs.formEl.elements.query.value, page, API.perPage);
 
 }
 
 function clearMarkupForNewImages() {
   refs.listEl.innerHTML = '';
-  // page = API.page;
+  page = API.page;
 }
