@@ -1,0 +1,28 @@
+.gallery {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.gallery-item {
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.stats {
+  display: flex;
+}
+
+.stats-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-item:not(:last-child) {
+  margin-right: 10px;
+}
+
+.material-icons {
+  margin-right: 5px;
+}
