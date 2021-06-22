@@ -2,8 +2,8 @@ import '@pnotify/core/dist/BrightTheme.css';
 const { defaults } = require('@pnotify/core');
 const { error , notice, Stack } = require('@pnotify/core');
 const debounce = require('lodash.debounce');
-const basicLightbox = require('basiclightbox');
-// import * as basicLightbox from 'basiclightbox';
+// const basicLightbox = require('basiclightbox');
+import * as basicLightbox from 'basiclightbox';
 
 
 import galleryMarkup from './templates/gallery.hbs';
@@ -51,6 +51,7 @@ function renderGallery(array) {
 }
 
 refs.formEl.addEventListener('input', debounce(onInputChange, 1500));
+console.log(imagesAPIService);
 
 function onInputChange(e) {
   e.preventDefault();
@@ -61,7 +62,8 @@ function onInputChange(e) {
     clearMarkupForNewImages();
     return;
   }
-  // console.log(imagesAPIService)
+  // checkEmptyRequest();
+  console.log(imagesAPIService)
   imagesAPIService.resetPage();
   clearMarkupForNewImages();
   fetchAndRender();
@@ -70,70 +72,21 @@ function onInputChange(e) {
 }
 
 function fetchAndRender() {
-  // const data = imagesAPIService.fetchImages();
-  // console.log(data);
 
-  //  console.log(imagesAPIService.fetchImages());
-  // .then(console.log)
   imagesAPIService
     .fetchImages()
     .then(images => {
       console.log(images);
       getNotice();
-      const gallery = renderGallery(images);
+      renderGallery(images);
       return images;
 
-
-      // const arrayOfImages = document.querySelectorAll('.image');
-      // console.log(arrayOfImages);
-      // [...arrayOfImages].addEventListener('click')
-      // console.log([...arrayOfImages[0]].children.img);
-
-      // return gallery;
     })
     .then((data)=> {
       console.log(data);
       console.log(data.hits);
+      openModal(data);
 
-      // console.log(data.hits.largeImageURL);
-      const arrayOfLargeURL = data.hits.map((elem) => {
-        return {
-          src: elem.webformatURL,
-          largeUrl: elem.largeImageURL
-        };
-    })
-    console.log(arrayOfLargeURL);
-      refs.listEl.addEventListener('click', (e) => {
-        // if (![...data.hits.webformatURL].includes(e.target.src)) return;
-        if (!e.target.classList.contains('image')) return;
-
-        console.log(e.target);
-        const findUrl = arrayOfLargeURL.find((elem) => {
-          if (elem.src === e.target.src) {
-            console.log(elem.largeUrl);
-            return elem.largeUrl;
-          }
-        })
-        console.log(findUrl.largeUrl);
-//         const instance = basicLightbox.create(`
-//     <div class="modal">
-//         <img src = "${findUrl.largeUrl}">
-//     </div>
-// `)
-
-    //     const imageClick = [...data.hits.webformatURL].indexOf(e.target.src);
-    //     console.log(imageClick);
-    // const urlImg = [...data.hits.largeImageURL][imageClick];
-    // console.log(urlImg);
-    const instance = basicLightbox.create(
-      `<img src = "${findUrl.largeUrl}">`
-    )
-    instance.show();
-
-  }
-  )
-      // console.log(data.hits[0].largeImageURL);
-      // openModal(data)
     })
     .catch(getError)
     .finally(() => {
@@ -147,7 +100,15 @@ function fetchAndRender() {
 }
 
 // refs.buttonEl.addEventListener('click', onBtnClick);
-refs.buttonEl.addEventListener('click', fetchAndRender);
+refs.buttonEl.addEventListener('click', (e) => {
+  imagesAPIService.query = e.target.value;
+  if (imagesAPIService.query === '') {
+    clearMarkupForNewImages();
+    return;
+  }
+  // checkEmptyRequest();
+  fetchAndRender();
+});
 
 // function onBtnClick(e) {
 //     if (refs.formEl.elements.query.value === '') {
@@ -182,30 +143,40 @@ function getNotice() {
 
 }
 
-// refs.listEl.addEventListener('click', onImageClick);
-
-// function onImageClick(e) {
-//   if (!e.target.classList.contains('photo-card')) return;
-//   console.log(e.target);
-//   const instance = basicLightbox.create(`
-//     <img src="${data.hits.largeImageURL}">
-// `)
-//   // return instance;
-//   instance.show()
-// }
 
 function openModal(data) {
-  refs.listEl.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('photo-card')) return;
-    console.log(e.target);
-    const imageClick = e.target;
-    const urlImg = imageClick.hits.largeImageURL;
-    console.log(urlImg);
+  const arrayOfLargeURL = data.hits.map((elem) => {
+        return {
+          src: elem.webformatURL,
+          largeUrl: elem.largeImageURL
+        };
+    })
+    // console.log(arrayOfLargeURL);
+      refs.listEl.addEventListener('click', (e) => {
+
+        if (!e.target.classList.contains('image')) return;
+
+        // console.log(e.target);
+        const findUrl = arrayOfLargeURL.find((elem) => {
+          if (elem.src === e.target.src) {
+            // console.log(elem.largeUrl);
+            return elem.largeUrl;
+          }
+        })
+        // console.log(findUrl.largeUrl);
     const instance = basicLightbox.create(
-      `<img src = "urlImg">`
+      `<img src = "${findUrl.largeUrl}">`
     )
     instance.show();
-
   }
   )
 }
+
+// function checkEmptyRequest() {
+//   // imagesAPIService.query = e.target.value;
+//   if (imagesAPIService.query === '') {
+//     clearMarkupForNewImages();
+//     return;
+//   }
+
+// }
