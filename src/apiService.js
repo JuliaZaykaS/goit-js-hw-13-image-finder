@@ -32,8 +32,12 @@ export default class ImagesAPIService {
     const url = `${BASE_URL}?image_type=photo&orientation=horizontal&q=${this.searchQuery}&page=${this.page}&per_page=${this.perPage}&key=${KEY}`;
 
     return fetch(url)
-      .then(response => response.json())
-      .then(({ images }) => {
+      .then(response => {
+        // console.log(response);
+        return response.json()
+      })
+      .then((images) => {
+        // console.log(images);
         this.incrementPage();
         return images;
       });
