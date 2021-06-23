@@ -19,7 +19,7 @@ refs.formEl.addEventListener('input', debounce(onInputChange, 1500));
 function onInputChange(e) {
   e.preventDefault();
 
-  imagesAPIService.query = e.target.value;
+  imagesAPIService.query = e.target.value.trim();
 
   if (imagesAPIService.query === '') {
     clearMarkupForNewImages();
