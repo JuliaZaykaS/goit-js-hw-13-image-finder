@@ -1,3 +1,29 @@
+input {
+  display: block;
+  text-align: center;
+  width: 300px;
+  height: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 5px solid green;
+  border-radius: 5px;
+  font-size: 30px;
+}
+
+.search-form {
+  margin-bottom: 50px;
+}
+
+.pnotify {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pnotify-pre-line {
+  font-size: 30px;
+}
+
 .gallery {
   list-style: none;
   display: flex;
