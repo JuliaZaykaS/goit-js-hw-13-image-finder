@@ -1,10 +1,9 @@
 import '@pnotify/core/dist/BrightTheme.css';
 const { defaults } = require('@pnotify/core');
-const { error , notice, Stack } = require('@pnotify/core');
+const { error, notice, Stack } = require('@pnotify/core');
 const debounce = require('lodash.debounce');
 // const basicLightbox = require('basiclightbox');
 import * as basicLightbox from 'basiclightbox';
-
 
 import galleryMarkup from './templates/gallery.hbs';
 import css from './css/style.css';
@@ -15,14 +14,8 @@ const refs = {
   formEl: document.querySelector('#search-form'),
   listEl: document.querySelector('.gallery'),
   scrollPointEl: document.getElementById('gallery-container'),
-  // hiddenPointEl: document.getElementById('hidden-point'),
+  hiddenPointEl: document.getElementById('hidden-point'),
 };
-
-// const instance = basicLightbox.create(`
-//     <img src="assets/images/image.png" width="800" height="600">
-// `)
-
-// instance.show()
 
 const myStack = new Stack({
   dir1: 'down',
@@ -32,19 +25,31 @@ const myStack = new Stack({
   spacing1: 36,
   spacing2: 36,
   push: 'bottom',
-  context: refs.formEl
+  context: refs.formEl,
 });
-
 
 const imagesAPIService = new ImagesAPIService();
 // console.log(imagesAPIService);
 
+const options = {
+  rootMargin: '50px',
+  threshold: 0.5,
+};
 
+const onEntry = entries => {
+  if (entries[0].intersectionRatio <= 0) return;
+  console.log('hello world');
+  // imagesAPIService.query = e.target.value;
+  if (imagesAPIService.query === '') {
+    clearMarkupForNewImages();
+    return;
+  }
+  fetchAndRender();
+};
 
+const observer = new IntersectionObserver(onEntry, options);
 
-
-
-
+observer.observe(refs.hiddenPointEl);
 
 function renderGallery(array) {
   refs.listEl.insertAdjacentHTML('beforeend', galleryMarkup(array));
@@ -63,7 +68,7 @@ function onInputChange(e) {
     return;
   }
   // checkEmptyRequest();
-  console.log(imagesAPIService)
+  console.log(imagesAPIService);
   imagesAPIService.resetPage();
   clearMarkupForNewImages();
   fetchAndRender();
@@ -72,7 +77,6 @@ function onInputChange(e) {
 }
 
 function fetchAndRender() {
-
   imagesAPIService
     .fetchImages()
     .then(images => {
@@ -80,103 +84,80 @@ function fetchAndRender() {
       getNotice();
       renderGallery(images);
       return images;
-
     })
-    .then((data)=> {
+    .then(data => {
       console.log(data);
       console.log(data.hits);
       openModal(data);
-
     })
     .catch(getError)
     .finally(() => {
-    refs.scrollPointEl.scrollIntoView({
+      refs.scrollPointEl.scrollIntoView({
         behavior: 'smooth',
         block: 'end',
-      })
-  })
-
-
-}
-
-// refs.buttonEl.addEventListener('click', onBtnClick);
-refs.buttonEl.addEventListener('click', (e) => {
-  imagesAPIService.query = e.target.value;
-  if (imagesAPIService.query === '') {
-    clearMarkupForNewImages();
-    return;
-  }
-  // checkEmptyRequest();
-  fetchAndRender();
-});
-
-// function onBtnClick(e) {
-//     if (refs.formEl.elements.query.value === '') {
-//         // page = API.page;
-//     return;
-//   }
-//   // page += 1;
-//   // console.log(page);
-//   // scroll();
-//   fetchAndRender(refs.formEl.elements.query.value, page, API.perPage);
-
-// }
-
-function clearMarkupForNewImages() {
-  refs.listEl.innerHTML = '';
-  // page = API.page;
+      });
+    });
 }
 
 
-function getError() {
-const myError = error({
-  text: "Ooops, something went wrong",
-  stack: myStack
-});
-}
-
-function getNotice() {
-  const myNotice = notice({
-    text: "Please wait, loading...",
-    stack: myStack
-});
-
-}
-
-
-function openModal(data) {
-  const arrayOfLargeURL = data.hits.map((elem) => {
-        return {
-          src: elem.webformatURL,
-          largeUrl: elem.largeImageURL
-        };
-    })
-    // console.log(arrayOfLargeURL);
-      refs.listEl.addEventListener('click', (e) => {
-
-        if (!e.target.classList.contains('image')) return;
-
-        // console.log(e.target);
-        const findUrl = arrayOfLargeURL.find((elem) => {
-          if (elem.src === e.target.src) {
-            // console.log(elem.largeUrl);
-            return elem.largeUrl;
-          }
-        })
-        // console.log(findUrl.largeUrl);
-    const instance = basicLightbox.create(
-      `<img src = "${findUrl.largeUrl}">`
-    )
-    instance.show();
-  }
-  )
-}
-
-// function checkEmptyRequest() {
-//   // imagesAPIService.query = e.target.value;
+// refs.buttonEl.addEventListener('click', e => {
+//   imagesAPIService.query = e.target.value;
 //   if (imagesAPIService.query === '') {
 //     clearMarkupForNewImages();
 //     return;
 //   }
+//   // checkEmptyRequest();
+//   fetchAndRender();
+// });
 
-// }
+
+
+function clearMarkupForNewImages() {
+  refs.listEl.innerHTML = '';
+
+}
+
+function getError() {
+  const myError = error({
+    text: 'Ooops, something went wrong',
+    stack: myStack,
+  });
+}
+
+function getNotice() {
+  const myNotice = notice({
+    text: 'Please wait, loading...',
+    stack: myStack,
+  });
+}
+
+function openModal(data) {
+  const arrayOfLargeURL = data.hits.map(elem => {
+    return {
+      src: elem.webformatURL,
+      largeUrl: elem.largeImageURL,
+    };
+  });
+  console.log(arrayOfLargeURL);
+  refs.listEl.addEventListener('click', e => {
+    if (!e.target.classList.contains('image')) return;
+
+    // console.log(e.target);
+    arrayOfLargeURL.find(elem => {
+      if (elem.src === e.target.src) {
+        console.log(elem.largeUrl);
+        const instance = basicLightbox.create(`<img src = "${elem.largeUrl}">`);
+    // console.log(instance);
+    instance.show();
+        // return elem.largeUrl;
+      }
+    });
+    // console.log(findUrl.largeUrl);
+    // console.log(findUrl);
+    // const instance = basicLightbox.create(`<img src = "${findUrl.largeUrl}">`);
+    // // console.log(instance);
+    // instance.show();
+  });
+}
+
+
