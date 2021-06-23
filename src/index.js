@@ -2,7 +2,7 @@ import '@pnotify/core/dist/BrightTheme.css';
 const { defaults } = require('@pnotify/core');
 const { error, notice, Stack } = require('@pnotify/core');
 const debounce = require('lodash.debounce');
-// const basicLightbox = require('basiclightbox');
+
 import * as basicLightbox from 'basiclightbox';
 
 import galleryMarkup from './templates/gallery.hbs';
@@ -17,7 +17,7 @@ const refs = {
   hiddenPointEl: document.getElementById('hidden-point'),
 };
 
-const myStack = new Stack({
+const myStack1 = new Stack({
   dir1: 'down',
   dir2: 'left',
   firstpos1: 25,
@@ -28,28 +28,42 @@ const myStack = new Stack({
   context: refs.formEl,
 });
 
+const myStack2 = new Stack({
+  dir1: 'down',
+  dir2: 'left',
+  firstpos1: 25,
+  firstpos2: 25,
+  spacing1: 36,
+  spacing2: 36,
+  push: 'bottom',
+  context: refs.hiddenPointEl,
+});
+
 const imagesAPIService = new ImagesAPIService();
-// console.log(imagesAPIService);
 
-const options = {
-  rootMargin: '50px',
-  threshold: 0.5,
-};
+function infinityScroll(render, notice) {
+  const options = {
+    rootMargin: '50px',
+    threshold: 0.5,
+  };
+  const onEntry = entries => {
+    if (entries[0].intersectionRatio <= 0) return;
 
-const onEntry = entries => {
-  if (entries[0].intersectionRatio <= 0) return;
-  console.log('hello world');
-  // imagesAPIService.query = e.target.value;
-  if (imagesAPIService.query === '') {
-    clearMarkupForNewImages();
-    return;
-  }
-  fetchAndRender();
-};
+    if (imagesAPIService.query === '') {
+      clearMarkupForNewImages();
+      return;
+    }
+    render();
+    notice(myStack2);
+  };
 
-const observer = new IntersectionObserver(onEntry, options);
+  const observer = new IntersectionObserver(onEntry, options);
 
-observer.observe(refs.hiddenPointEl);
+  observer.observe(refs.hiddenPointEl);
+}
+
+infinityScroll(fetchAndRender, getNotice);
+
 
 function renderGallery(array) {
   refs.listEl.insertAdjacentHTML('beforeend', galleryMarkup(array));
@@ -61,33 +75,26 @@ console.log(imagesAPIService);
 function onInputChange(e) {
   e.preventDefault();
   imagesAPIService.query = e.target.value;
-  // console.log(e.target.value);
-  // console.log(imagesAPIService.query);
+
   if (imagesAPIService.query === '') {
     clearMarkupForNewImages();
     return;
   }
-  // checkEmptyRequest();
-  console.log(imagesAPIService);
   imagesAPIService.resetPage();
   clearMarkupForNewImages();
   fetchAndRender();
-  // imagesAPIService.incrementPage();
-  // scroll();
+  getNotice(myStack1);
 }
 
 function fetchAndRender() {
   imagesAPIService
     .fetchImages()
     .then(images => {
-      console.log(images);
-      getNotice();
+      // getNotice(myStack1);
       renderGallery(images);
       return images;
     })
     .then(data => {
-      console.log(data);
-      console.log(data.hits);
       openModal(data);
     })
     .catch(getError)
@@ -99,7 +106,6 @@ function fetchAndRender() {
     });
 }
 
-
 // refs.buttonEl.addEventListener('click', e => {
 //   imagesAPIService.query = e.target.value;
 //   if (imagesAPIService.query === '') {
@@ -110,11 +116,8 @@ function fetchAndRender() {
 //   fetchAndRender();
 // });
 
-
-
 function clearMarkupForNewImages() {
   refs.listEl.innerHTML = '';
-
 }
 
 function getError() {
@@ -124,10 +127,10 @@ function getError() {
   });
 }
 
-function getNotice() {
+function getNotice(stack) {
   const myNotice = notice({
     text: 'Please wait, loading...',
-    stack: myStack,
+    stack: stack,
   });
 }
 
@@ -138,26 +141,13 @@ function openModal(data) {
       largeUrl: elem.largeImageURL,
     };
   });
-  console.log(arrayOfLargeURL);
-  refs.listEl.addEventListener('click', e => {
+   refs.listEl.addEventListener('click', e => {
     if (!e.target.classList.contains('image')) return;
-
-    // console.log(e.target);
     arrayOfLargeURL.find(elem => {
       if (elem.src === e.target.src) {
-        console.log(elem.largeUrl);
         const instance = basicLightbox.create(`<img src = "${elem.largeUrl}">`);
-    // console.log(instance);
-    instance.show();
-        // return elem.largeUrl;
+        instance.show();
       }
     });
-    // console.log(findUrl.largeUrl);
-    // console.log(findUrl);
-    // const instance = basicLightbox.create(`<img src = "${findUrl.largeUrl}">`);
-    // // console.log(instance);
-    // instance.show();
   });
 }
-
-

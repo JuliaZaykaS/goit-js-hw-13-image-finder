@@ -1,3 +1,24 @@
+// let page = 1;
+// const perPage = 12;
+// const query = 'horse';
+// https://pixabay.com/api/?image_type=photo&orientation=horizontal&q=что_искать&page=номер_страницы&per_page=12&key=твой_ключ
+
+
+// вариант написанный через функции
+// function fetchImages(searchQuery, page, perPage) {
+//   return fetch(
+//     `${BASE_URL}?image_type=photo&orientation=horizontal&q=${searchQuery}&page=${page}&per_page=${perPage}&key=${KEY}`,
+//   ).then(r => {
+//     // if (!r.ok) return null;
+
+//     return r.json();
+//   });
+// }
+
+// // console.log(fetchImages('horse'));
+// export default { fetchImages, page ,perPage };
+
+
 import galleryMarkup from './templates/gallery.hbs';
 import css from './css/style.css';
 const debounce = require('lodash.debounce');
